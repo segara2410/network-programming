@@ -20,7 +20,7 @@ class TcpHandler():
 
   def receive_str(self):
     length = recvall(3)
-    message = recvall(int(len_msg))
+    message = recvall(int(length)).decode("utf-8")
 
     return length, message
 

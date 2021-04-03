@@ -1,8 +1,9 @@
 import os
+import socket
 import sys
 
 class TcpHandler():
-  def __init__(role):
+  def __init__(self, role):
     # init self.socket here
     # if role == 'server':
     # else

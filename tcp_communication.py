@@ -67,6 +67,7 @@ class Server():
       self.tcp_handler.send_string(content)
 
     if parsed_command[0] == 'quit':
+      print('server shutdown..')
       quit()
 
 class Client():
@@ -79,12 +80,18 @@ class Client():
 
   def handle_command(self, command):
     parsed_command = command.split()
+    if parsed_command[0] == 'get':
+      if len(parsed_command) < 3:
+        print('please specify the target and destination files.')
+        return
 
     if parsed_command[0] in ['ls', 'get', 'quit']:
       # send this later
       self.tcp_handler.send_string(command)
 
       if parsed_command[0] == 'quit':
+        print('server shutdown..')
+        print('client shutdown..')
         quit()
       
       length, response = self.tcp_handler.receive_string()

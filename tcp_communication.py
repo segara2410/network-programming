@@ -1,12 +1,24 @@
+import argparse
 import os
 import socket
 import sys
 
 class TcpHandler():
-  def __init__(self, role):
-    # init self.socket here
-    # if role == 'server':
-    # else
+  def __init__(self, role, host, port):
+    if role == 'server':
+      server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+      server_socket.bind((host, port))
+      server_socket.listen(1)
+      print('Listening at', server_socket.getsockname())
+      self.socket, sockname = server_socket.accept()
+
+
+    if role =='client':
+      self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      self.socket.connect((host, port))
+      print('Client has been assigned socket name', self.socket.getsockname())
+
 
   def recvall(self, length):
     data = b''
@@ -19,18 +31,19 @@ class TcpHandler():
       data += more
     return data
 
-  def receive_str(self):
-    length = recvall(3)
-    message = recvall(int(length)).decode("utf-8")
+  def receive_string(self):
+    length = self.recvall(3)
+    message = self.recvall(int(length)).decode("utf-8")
 
     return length, message
 
-  def send_str(self, string):
-    self.socket.sendall(str.encode(string))
+  def send_string(self, string):
+    message = f'{len(string):03d}{string}'
+    self.socket.sendall(str.encode(message))
 
 class Server():
-  def __init__(self):
-    self.tcp_handler = TcpHandler('server')
+  def __init__(self, host, port):
+    self.tcp_handler = TcpHandler('server', host, port)
 
   def list_dir(self, path):
     return os.listdir(path)
@@ -40,24 +53,26 @@ class Server():
       return file.read()
 
   def handle_command(self):
-    #  _, command = self.tcp_handler.receive_str(content)
+    _, command = self.tcp_handler.receive_string()
 
     parsed_command = command.split()
+
     if parsed_command[0] == 'ls':
-      return self.list_dir(parsed_command[1] if len(parsed_command) > 1 else None)
+      self.tcp_handler.send_string('\n'.join(self.list_dir(
+        parsed_command[1] if len(parsed_command) > 1 else None)
+      ))
 
     if parsed_command[0] == 'get':
       content = self.file_to_string(parsed_command[1])
-      print(content)
       # send this later
-      # self.tcp_handler.send_str(content)
+      self.tcp_handler.send_string(content)
 
     if parsed_command[0] == 'quit':
       quit()
 
 class Client():
-  def __init__(self):
-    self.tcp_handler = TcpHandler('client')
+  def __init__(self, host, port):
+    self.tcp_handler = TcpHandler('client', host, port)
 
   def string_to_file(self, string, path):
     with open(path, "w") as file:
@@ -65,39 +80,44 @@ class Client():
 
   def handle_command(self, command):
     parsed_command = command.split()
-    if command[0] in ['ls', 'get', 'quit']:
-      # send this later
-      # self.tcp_handler.send_str(content)
 
-      if command[0] == 'quit':
+    if parsed_command[0] in ['ls', 'get', 'quit']:
+      # send this later
+      self.tcp_handler.send_string(command)
+
+      if parsed_command[0] == 'quit':
         quit()
       
-      # length, response = self.tcp_handler.receive_str(content)
-      if command[0] == 'ls':
+      length, response = self.tcp_handler.receive_string()
+      if parsed_command[0] == 'ls':
         print(response)
 
-      if command[0] == 'get':
-        print(f'fetch:{command[1]} size: {length} lokal:{command[2]}')
-        string_to_file(response, command[2])
+      if parsed_command[0] == 'get':
+        print(f'fetch: {parsed_command[1]} size: {int(length)} lokal: {parsed_command[2]}')
+        self.string_to_file(response, parsed_command[2])
 
     else:
       print('unknown command, please try again')
 
 
 if __name__ == '__main__':
-  if len(sys.argv) > 1:
-    if str(sys.argv[1]) == 'client':
-      client = Client()
+  parser = argparse.ArgumentParser(description='Send and receive over TCP')
+  parser.add_argument('role', choices=['client', 'server'], help='which role to play')
+  parser.add_argument('host', help='interface the server listens at;'
+                      ' host the client sends to')
+  parser.add_argument('-p', metavar='PORT', type=int, default=1060,
+                      help='TCP port (default 1060)')
 
-      while True:
-        command = input('> ')
-        client.handle_command()
-    
-    elif str(sys.argv[1]) == 'server':
-      server = Server()
+  args = parser.parse_args()
+  if args.role == 'client':
+    client = Client(args.host, args.p)
 
-      while True:
-        server.handle_command()
+    while True:
+      command = input('> ')
+      client.handle_command(command)
+  
+  elif args.role == 'server':
+    server = Server(args.host, args.p)
 
-  else:
-    print('invalid argument.')
+    while True:
+      server.handle_command()

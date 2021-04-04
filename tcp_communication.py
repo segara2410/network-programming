@@ -64,7 +64,6 @@ class Server():
 
     if parsed_command[0] == 'get':
       content = self.file_to_string(parsed_command[1])
-      # send this later
       self.tcp_handler.send_string(content)
 
     if parsed_command[0] == 'quit':

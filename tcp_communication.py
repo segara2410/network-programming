@@ -12,6 +12,9 @@ class TcpHandler():
       server_socket.listen(1)
       print('Listening at', server_socket.getsockname())
       self.socket, sockname = server_socket.accept()
+      print('We have accepted a connection from', sockname)
+      print('  Socket name:', self.socket.getsockname())
+      print('  Socket peer:', self.socket.getpeername())
 
 
     if role =='client':

@@ -2,6 +2,7 @@ import argparse
 import os
 import socket
 import sys
+import time
 
 class TcpHandler():
   def __init__(self, role, host, port):
@@ -70,6 +71,7 @@ class Server():
       self.tcp_handler.send_string(content)
 
     if parsed_command[0] == 'quit':
+      time.sleep(1)
       print('server shutdown..')
       quit()
 
@@ -89,7 +91,6 @@ class Client():
         return
 
     if parsed_command[0] in ['ls', 'get', 'quit']:
-      # send this later
       self.tcp_handler.send_string(command)
 
       if parsed_command[0] == 'quit':

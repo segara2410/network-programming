@@ -23,6 +23,8 @@ class TcpHandler():
       self.socket.connect((host, port))
       print('Client has been assigned socket name', self.socket.getsockname())
 
+  def __del__(self):
+    self.socket.close()
 
   def recvall(self, length):
     data = b''
@@ -72,6 +74,7 @@ class Server():
 
     if parsed_command[0] == 'quit':
       time.sleep(1)
+      del self.tcp_handler
       print('server shutdown..')
       quit()
 
@@ -94,6 +97,7 @@ class Client():
       self.tcp_handler.send_string(command)
 
       if parsed_command[0] == 'quit':
+        del self.tcp_handler
         print('server shutdown..')
         print('client shutdown..')
         quit()

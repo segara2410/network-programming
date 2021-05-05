@@ -4,6 +4,7 @@
 # Constants and routines for supporting a certain network conversation.
 
 import argparse, socket, time
+from threading import Thread
 
 def parse_command_line(description):
     """Parse command line and return a socket address."""
@@ -29,7 +30,7 @@ def accept_connections_forever(listener):
     while True:
         sock, address = listener.accept()
         print('Accepted connection from {}'.format(address))
-        handle_conversation(sock, address)
+        Thread(target=handle_conversation, args=(sock, address, )).start()
 
 def handle_conversation(sock, address):
     """Converse with a client over `sock` until they are done talking."""

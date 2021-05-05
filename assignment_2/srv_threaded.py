@@ -4,12 +4,9 @@
 # Using multiple threads to serve several clients in parallel.
 
 import zen_utils
-from threading import Thread
 
-def start_threads(listener, workers=4):
-    t = (listener,)
-    for i in range(workers):
-        Thread(target=zen_utils.accept_connections_forever, args=t).start()
+def start_threads(listener):
+    zen_utils.accept_connections_forever(listener)
 
 if __name__ == '__main__':
     address = zen_utils.parse_command_line('multi-threaded server')

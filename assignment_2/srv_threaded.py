@@ -6,8 +6,6 @@
 import zen_utils
 from threading import Thread
 
-value = 0
-
 def start_threads(listener, workers=4):
     t = (listener,)
     for i in range(workers):

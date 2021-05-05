@@ -3,7 +3,6 @@ import sys, random, multiprocessing, ctypes
 
 HOST = "127.0.0.1"
 PORT = 1060
-NUMJOBS = 4
 
 final_value = multiprocessing.Value(ctypes.c_int, 0)
 
@@ -35,6 +34,12 @@ def worker(address, i, data):
     sock.close()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='multi-threaded client')
+    parser.add_argument('-j', metavar='jobs', type=int, default=4,
+                    help='jobs (default 4)')
+    args = parser.parse_args()
+    NUMJOBS = args.j
+
     f = open("input.txt")
     data = f.readlines()
     f.close()
@@ -53,6 +58,6 @@ if __name__ == '__main__':
         p.join()
     
     print('\nfinal value: ', final_value.value)
-    print('final value / 4: ', final_value.value // 4)
+    print('final value /', NUMJOBS, ': ', final_value.value // NUMJOBS)
 
 # vim:sw=4:ai

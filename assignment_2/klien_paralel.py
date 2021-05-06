@@ -37,10 +37,13 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='multi-threaded client')
     parser.add_argument('-j', metavar='jobs', type=int, default=4,
                     help='jobs (default 4)')
+    parser.add_argument('-f', metavar='file', type=str, default='input.txt',
+                help='filename')
+
     args = parser.parse_args()
     NUMJOBS = args.j
 
-    f = open("input.txt")
+    f = open(args.f)
     data = f.readlines()
     f.close()
 

@@ -19,8 +19,8 @@ class SqliteHandlerService(rpyc.Service):
   def __init__(self, database: str):
     self.sqlite_handler = SqliteHandler(database)
 
-  def exposed_rawquery(self, query: str) -> str:
-    return str(self.sqlite_handler.run_query(query))
+  def exposed_rawquery(self, query: str) -> list:
+    return self.sqlite_handler.run_query(query)
 
   def exposed_tabquery(self, query: str) -> str:
     result = self.sqlite_handler.run_query(query)
@@ -34,7 +34,7 @@ class SqliteHandlerService(rpyc.Service):
 
     return table
 
-  def exposed_quit(self):
+  def exposed_quit(self) -> None:
     exit()
 
 

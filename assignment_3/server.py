@@ -15,7 +15,7 @@ class SqliteHandler():
     return self.cursor.fetchall()
 
 
-class MyService(rpyc.Service):
+class SqliteHandlerService(rpyc.Service):
   def __init__(self, database: str):
     self.sqlite_handler = SqliteHandler(database)
 
@@ -39,6 +39,6 @@ class MyService(rpyc.Service):
 
 
 if __name__ == "__main__":
-  service = classpartial(MyService, 'data.db')
+  service = classpartial(SqliteHandlerService, 'data.db')
   server = ThreadedServer(service, hostname='localhost', port=2410)
   server.start()

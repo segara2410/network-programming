@@ -3,6 +3,7 @@ from rpyc.utils.helpers import classpartial
 from rpyc.utils.server import ThreadedServer
 from sqlite3 import Connection, Cursor, connect
 from beautifultable import BeautifulTable
+import argparse
 
 class SqliteHandler():
   def __init__(self, database: str):
@@ -39,6 +40,14 @@ class SqliteHandlerService(rpyc.Service):
 
 
 if __name__ == "__main__":
-  service = classpartial(SqliteHandlerService, 'data.db')
-  server = ThreadedServer(service, hostname='localhost', port=2410)
+  parser = argparse.ArgumentParser(description='TCP Server Program')
+  parser.add_argument('-p', metavar='PORT', type=int, default=1060,
+                      help='TCP port (default 1060)')
+  parser.add_argument('-d', metavar='DATABASE', type=str, default='data.db',
+                      help='Database (default data.db)')
+
+  args = parser.parse_args()
+  print(f'Server running on port {args.p} using {args.d}')
+  service = classpartial(SqliteHandlerService, args.d)
+  server = ThreadedServer(service, port=args.p)
   server.start()
